@@ -45,10 +45,21 @@ defmodule DiscoverRedditBot.TokenRefresh do
 
   # Private
   defp obtain_token() do
-    user = %{username: @credentials["username"], password: @credentials["password"]}
+    user = %{
+      username: @credentials["username"],
+      password: @credentials["password"],
+      client_id: @credentials["client_id"],
+      client_secret: @credentials["client_secret"]
+    }
+
     Logger.info("Getting access token...")
 
     case RedditClient.get_access_token(user) do
+      {:ok, %{"error" => _} = error} ->
+        Logger.error("Error received: #{inspect(error)}")
+        Logger.error("Trying again...")
+        obtain_token()
+
       {:ok, token} ->
         Logger.info("Token obtained")
         {:ok, token}
