@@ -22,8 +22,11 @@ defmodule DiscoverRedditBot.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:ex_gram, "~> 0.12"},
+      {:hackney, "~> 1.12"},
       {:tesla, "~> 1.2.1"},
-      {:jason, "~> 1.1"}
+      {:jason, "~> 1.1"},
+      {:logger_file_backend, "0.0.11"}
     ]
   end
 end

@@ -24,3 +24,9 @@ discover_reddit_bot-*.tar
 
 # Reddit app credentials
 reddit.auth
+
+# Bot token
+*.token
+
+# Logs
+log/

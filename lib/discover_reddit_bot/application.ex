@@ -4,13 +4,12 @@ defmodule DiscoverRedditBot.Application do
   require Logger
 
   def start(_type, _args) do
-    # token = ExGram.Config.get(:ex_gram, :token)
+    token = ExGram.Config.get(:ex_gram, :token)
 
     # List all child processes to be supervised
     children = [
-      # ExGram,
-      # {DiscoverRedditBot.Bot, [method: :polling, token: token]}
-      DiscoverRedditBot.TokenRefresh
+      ExGram,
+      {DiscoverRedditBot.Bot, [method: :polling, token: token]}
     ]
 
     opts = [strategy: :one_for_one, name: SpotifyUriBot.Supervisor]
