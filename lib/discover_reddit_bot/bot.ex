@@ -34,11 +34,13 @@ defmodule DiscoverRedditBot.Bot do
   end
 
   def handle({:inline_query, %{query: text}}, context) do
-    articles =
-      text
-      |> Parser.get_subreddits()
-      |> TextFormatter.get_inline_articles()
+    subreddits_detected = Parser.get_subreddits(text)
+    articles = TextFormatter.get_inline_articles(subreddits_detected)
 
-    answer_inline_query(context, articles)
+    if subreddits_detected == [] do
+      answer_inline_query(context, TextFormatter.get_no_subreddits_inline())
+    else
+      answer_inline_query(context, articles)
+    end
   end
 end

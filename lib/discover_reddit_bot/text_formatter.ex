@@ -41,4 +41,17 @@ defmodule DiscoverRedditBot.TextFormatter do
 
     [all_article] ++ articles
   end
+
+  def get_no_subreddits_inline() do
+    [
+      %InlineQueryResultArticle{
+        type: "article",
+        id: "nosubs",
+        title: "No subreddits detected",
+        input_message_content: %InputTextMessageContent{
+          message_text: "No subreddits detected"
+        }
+      }
+    ]
+  end
 end
