@@ -3,7 +3,7 @@ defmodule DiscoverRedditBot.Bot do
 
   require Logger
 
-  alias DiscoverRedditBot.{Parser, RedditClient}
+  alias DiscoverRedditBot.{Parser, TextFormatter}
 
   use ExGram.Bot,
     name: @bot,
@@ -25,25 +25,20 @@ defmodule DiscoverRedditBot.Bot do
   end
 
   def handle({:text, text, _msg}, context) do
-    [url | _] = Parser.extract_urls(text)
-    {:ok, comments} = RedditClient.get_comments(url)
+    subreddits_detected = Parser.get_subreddits(text)
+    message = TextFormatter.format_subreddits(subreddits_detected)
 
-    message =
-      Parser.extract_subrredits(comments)
-      |> DiscoverRedditBot.TextFormatter.format_subreddits()
-
-    answer(context, message, parse_mode: "Markdown")
+    if subreddits_detected != [] do
+      answer(context, message, parse_mode: "Markdown")
+    end
   end
 
   def handle({:inline_query, %{query: text}}, context) do
-    [url | _] = Parser.extract_urls(text)
-    {:ok, comments} = RedditClient.get_comments(url)
+    articles =
+      text
+      |> Parser.get_subreddits()
+      |> TextFormatter.get_inline_articles()
 
-    message =
-      Parser.extract_subrredits(comments)
-      |> DiscoverRedditBot.TextFormatter.format_subreddits()
-
-    # TODO: generate articles
-    # answer_inline_query(context, message, parse_mode: "Markdown")
+    answer_inline_query(context, articles)
   end
 end
