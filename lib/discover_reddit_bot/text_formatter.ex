@@ -14,7 +14,7 @@ defmodule DiscoverRedditBot.TextFormatter do
         |> Stream.map(&format_subreddit/1)
         |> Enum.join("\n")
 
-      "Subreddits detected #{url}:\n#{subredits_message}"
+      "Subreddits detected [#{url}](#{url}):\n#{subredits_message}"
     end)
     |> Enum.join("\n\n")
   end
