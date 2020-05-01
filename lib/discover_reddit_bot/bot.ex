@@ -9,7 +9,7 @@ defmodule DiscoverRedditBot.Bot do
     name: @bot,
     setup_commands: true
 
-  command("start")
+  command("start", description: "Starts the bot")
   command("help", description: "Print the bot's help")
 
   middleware(ExGram.Middleware.IgnoreUsername)
@@ -21,7 +21,10 @@ defmodule DiscoverRedditBot.Bot do
   end
 
   def handle({:command, :help, _msg}, context) do
-    answer(context, "Here is your help:")
+    answer(
+      context,
+      "Send me any reddit comments url and I'll show you what subrredits are mentioned there!"
+    )
   end
 
   def handle({:text, text, _msg}, context) do
