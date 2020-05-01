@@ -10,7 +10,7 @@ token:
 export BOT_TOKEN = $(shell cat bot.token)
 
 start: token
-	_build/dev/rel/spotify_uri_bot/bin/spotify_uri_bot daemon
+	_build/dev/rel/discover_reddit_bot/bin/discover_reddit_bot daemon
 
 iex: token
 	iex -S mix
@@ -22,7 +22,7 @@ purge: clean
 	rm -rf deps
 
 stop:
-	_build/dev/rel/spotify_uri_bot/bin/spotify_uri_bot stop
+	_build/dev/rel/discover_reddit_bot/bin/discover_reddit_bot stop
 
 release: deps compile
 	mix release
