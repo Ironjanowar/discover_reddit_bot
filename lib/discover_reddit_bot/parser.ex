@@ -12,16 +12,8 @@ defmodule DiscoverRedditBot.Parser do
   """
   @spec extract_subrredits(String.t()) :: {:ok, [String.t()]}
   def extract_subrredits(text) do
-    Regex.scan(~r/\/?r\/[a-z0-9]*(\s|\\")/i, text)
-    |> Enum.map(fn [match, rest | _] ->
-      subreddit = String.replace(match, rest, "")
-
-      case String.starts_with?(subreddit, "r/") do
-        true -> "/#{subreddit}"
-        _ -> subreddit
-      end
-    end)
-    |> MapSet.new()
+    Regex.scan(~r/[ ^\/](r\/[a-zA-Z0-9-_]+)\b/i, text)
+    |> Enum.reduce(MapSet.new(), fn [_, match | _], acc -> MapSet.put(acc, "/#{match}") end)
     |> MapSet.to_list()
   end
 
