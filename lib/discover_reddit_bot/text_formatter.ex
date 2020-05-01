@@ -1,25 +1,32 @@
 defmodule DiscoverRedditBot.TextFormatter do
   alias ExGram.Model.{InlineQueryResultArticle, InputTextMessageContent}
 
-  @type subreddits :: DiscoverRedditBot.Parser.subreddits()
+  @type url_subreddits :: DiscoverRedditBot.Parser.url_subreddits()
 
   def reddit_base_url(), do: "https://www.reddit.com"
 
-  @spec format_subreddits(subreddits) :: String.t()
-  def format_subreddits(subreddits) do
-    subredits_message =
-      subreddits
-      |> Stream.map(&format_subreddit/1)
-      |> Enum.join("\n")
+  @spec format_subreddits(url_subreddits) :: String.t()
+  def format_subreddits(url_subreddits) do
+    url_subreddits
+    |> Enum.map(fn {url, subreddits} ->
+      subredits_message =
+        subreddits
+        |> Stream.map(&format_subreddit/1)
+        |> Enum.join("\n")
 
-    "Subreddits detected:\n#{subredits_message}"
+      "Subreddits detected #{url}:\n#{subredits_message}"
+    end)
+    |> Enum.join("\n\n")
   end
 
-  @spec get_inline_articles(subreddits) :: [InlineQueryResultArticle.t()]
-  def get_inline_articles(subreddits) do
+  @spec get_inline_articles(url_subreddits) :: [InlineQueryResultArticle.t()]
+  def get_inline_articles(url_subreddits) do
     articles =
-      Enum.map(subreddits, fn {name, n} = data ->
-        title = "#{name} (#{n})"
+      url_subreddits
+      |> merge_subreddits()
+      |> Enum.map(fn {name, n, urls} = data ->
+        n_urls = Enum.count(urls)
+        title = "#{name} (#{n} in #{n_urls} urls)"
 
         %InlineQueryResultArticle{
           type: "article",
@@ -37,7 +44,7 @@ defmodule DiscoverRedditBot.TextFormatter do
       id: "all",
       title: "Share all subreddits found",
       input_message_content: %InputTextMessageContent{
-        message_text: format_subreddits(subreddits),
+        message_text: format_subreddits(url_subreddits),
         parse_mode: "Markdown"
       }
     }
@@ -66,6 +73,29 @@ defmodule DiscoverRedditBot.TextFormatter do
     ]
   end
 
+  defp merge_subreddits(all) do
+    all
+    |> Enum.reduce(%{}, fn {url, subreddits}, merged ->
+      Enum.reduce(subreddits, merged, fn {sub, n}, merged ->
+        {current, urls} = Map.get(merged, sub, {0, []})
+
+        data = {current + n, urls ++ [url]}
+        Map.put(merged, sub, data)
+      end)
+    end)
+    |> Enum.map(fn {sub, {n, urls}} -> {sub, n, urls} end)
+  end
+
   defp format_subreddit({sub, n}), do: "  - [#{sub}](#{reddit_base_url()}#{sub}) (#{n})"
-  defp format_subreddit({sub, n}, :for_inline), do: "[#{sub}](#{reddit_base_url()}#{sub}) (#{n})"
+
+  defp format_subreddit({sub, n, urls}, :for_inline) do
+    urls_text =
+      urls
+      |> Stream.map(fn url ->
+        "[#{url}](#{url})"
+      end)
+      |> Enum.join("\n\n")
+
+    "[#{sub}](#{reddit_base_url()}#{sub}) (#{n}) detected on URLs: \n\n#{urls_text}"
+  end
 end

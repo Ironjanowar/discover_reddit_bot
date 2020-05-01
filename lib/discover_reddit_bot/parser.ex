@@ -2,24 +2,28 @@ defmodule DiscoverRedditBot.Parser do
   alias DiscoverRedditBot.RedditClient
 
   @type subreddits :: [{String.t(), non_neg_integer()}]
+  @type url_subreddits :: %{String.t() => subreddits}
 
   @doc """
   This function expects the full json from reddit as a string
   and returns a map with key the subreddit name and value number
   of occurrences
   """
-  @spec get_subreddits(String.t()) :: subreddits
+  @spec get_subreddits(String.t()) :: url_subreddits
   def get_subreddits(text) do
     text
     |> extract_urls()
-    |> Enum.map(fn url ->
+    |> Stream.map(fn url ->
       case RedditClient.get_comments(url) do
-        {:ok, comments} -> extract_subrredits(comments)
-        _ -> %{}
+        {:ok, comments} ->
+          subreddits = comments |> extract_subrredits() |> sort_subreddits()
+          {url, subreddits}
+
+        _ ->
+          {url, []}
       end
     end)
-    |> merge_subreddits()
-    |> sort_subreddits()
+    |> Enum.into(%{})
   end
 
   defp extract_urls(text) do
@@ -35,22 +39,6 @@ defmodule DiscoverRedditBot.Parser do
       current = Map.get(acc, name, 0)
 
       Map.put(acc, name, current + 1)
-    end)
-  end
-
-  defp merge_subreddits([sub]), do: sub
-
-  defp merge_subreddits([sub1, sub2 | rest]) do
-    merged = merge_subreddits(sub1, sub2)
-
-    merge_subreddits([merged | rest])
-  end
-
-  defp merge_subreddits(sub1, sub2) do
-    Enum.reduce(sub1, sub2, fn {k, sum}, acc ->
-      current = Map.get(acc, k, 0)
-
-      Map.put(acc, k, current + sum)
     end)
   end
 

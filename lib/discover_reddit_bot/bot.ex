@@ -31,7 +31,7 @@ defmodule DiscoverRedditBot.Bot do
     subreddits_detected = Parser.get_subreddits(text)
     message = TextFormatter.format_subreddits(subreddits_detected)
 
-    if subreddits_detected != [] do
+    if subreddits_detected != %{} do
       answer(context, message, parse_mode: "Markdown")
     else
       answer(context, TextFormatter.no_subreddits_text(), parse_mode: "Markdown")
@@ -42,7 +42,7 @@ defmodule DiscoverRedditBot.Bot do
     subreddits_detected = Parser.get_subreddits(text)
     articles = TextFormatter.get_inline_articles(subreddits_detected)
 
-    if subreddits_detected == [] do
+    if subreddits_detected == %{} do
       answer_inline_query(context, TextFormatter.get_no_subreddits_inline())
     else
       answer_inline_query(context, articles)
