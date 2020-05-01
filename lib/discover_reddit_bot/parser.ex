@@ -18,14 +18,18 @@ defmodule DiscoverRedditBot.Parser do
   end
 
   def get_subreddits(text) do
-    text
-    |> extract_urls()
-    |> Enum.map(fn url ->
-      case RedditClient.get_comments(url) do
-        {:ok, comments} -> extract_subrredits(comments)
-        _ -> []
-      end
-    end)
-    |> List.flatten()
+    urls = extract_urls(text)
+
+    subreddits =
+      urls
+      |> Enum.map(fn url ->
+        case RedditClient.get_comments(url) do
+          {:ok, comments} -> extract_subrredits(comments)
+          _ -> []
+        end
+      end)
+      |> List.flatten()
+
+    %{subreddits: subreddits, urls: urls}
   end
 end

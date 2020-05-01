@@ -28,8 +28,8 @@ defmodule DiscoverRedditBot.Bot do
   end
 
   def handle({:text, text, _msg}, context) do
-    subreddits_detected = Parser.get_subreddits(text)
-    message = TextFormatter.format_subreddits(subreddits_detected)
+    %{subreddits: subreddits_detected, urls: urls} = Parser.get_subreddits(text)
+    message = TextFormatter.format_subreddits(subreddits_detected, urls)
 
     if subreddits_detected != [] do
       answer(context, message, parse_mode: "Markdown")
@@ -37,8 +37,8 @@ defmodule DiscoverRedditBot.Bot do
   end
 
   def handle({:inline_query, %{query: text}}, context) do
-    subreddits_detected = Parser.get_subreddits(text)
-    articles = TextFormatter.get_inline_articles(subreddits_detected)
+    %{subreddits: subreddits_detected, urls: urls} = Parser.get_subreddits(text)
+    articles = TextFormatter.get_inline_articles(subreddits_detected, urls)
 
     if subreddits_detected == [] do
       answer_inline_query(context, TextFormatter.get_no_subreddits_inline())
