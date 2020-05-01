@@ -33,7 +33,7 @@ defmodule DiscoverRedditBot.TextFormatter do
           id: name,
           title: title,
           input_message_content: %InputTextMessageContent{
-            message_text: format_subreddit(data, :for_inline),
+            message_text: format_subreddit(data),
             parse_mode: "Markdown"
           }
         }
@@ -88,7 +88,7 @@ defmodule DiscoverRedditBot.TextFormatter do
 
   defp format_subreddit({sub, n}), do: "  - [#{sub}](#{reddit_base_url()}#{sub}) (#{n})"
 
-  defp format_subreddit({sub, n, urls}, :for_inline) do
+  defp format_subreddit({sub, n, urls}) do
     urls_text =
       urls
       |> Stream.map(fn url ->

@@ -33,8 +33,6 @@ defmodule DiscoverRedditBot.Bot do
 
     if subreddits_detected != %{} do
       answer(context, message, parse_mode: "Markdown")
-    else
-      answer(context, TextFormatter.no_subreddits_text(), parse_mode: "Markdown")
     end
   end
 
