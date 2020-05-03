@@ -15,8 +15,8 @@ defmodule DiscoverRedditBot.Parser do
     |> extract_urls()
     |> Stream.map(fn url ->
       case RedditClient.get_comments(url) do
-        {:ok, comments} ->
-          subreddits = comments |> extract_subrredits() |> sort_subreddits()
+        {:ok, body} ->
+          subreddits = body |> extract_comments() |> extract_subrredits() |> sort_subreddits()
           {url, subreddits}
 
         _ ->
@@ -32,7 +32,38 @@ defmodule DiscoverRedditBot.Parser do
     |> Enum.filter(&String.match?(&1, ~r/^(http|https):\/\/(www\.|old\.|)reddit.com/))
   end
 
-  defp extract_subrredits(text) do
+  defp extract_comments([_post, comments | _rest]) do
+    extract_comments(comments)
+  end
+
+  defp extract_comments(%{"data" => data}) do
+    children_comments =
+      data
+      |> extract_children()
+      |> Enum.flat_map(&extract_comments/1)
+
+    case data["body"] do
+      nil -> children_comments
+      body -> [body | children_comments]
+    end
+  end
+
+  defp extract_comments(_) do
+    []
+  end
+
+  defp extract_children(data) do
+    case {data["children"], data["replies"]} do
+      {c, r} when is_list(c) and is_map(r) -> [r | c]
+      {c, _} when is_list(c) -> c
+      {_, r} when is_map(r) -> [r]
+      _ -> []
+    end
+  end
+
+  defp extract_subrredits(comments) do
+    text = comments |> Enum.join("\n")
+
     Regex.scan(~r/[ ^\/](r\/[a-zA-Z0-9-_]+)\b/i, text)
     |> Enum.reduce(%{}, fn [_, match | _], acc ->
       name = "/" <> match
