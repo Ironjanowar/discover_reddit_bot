@@ -3,6 +3,8 @@ defmodule DiscoverRedditBot.RedditClient do
 
   require Logger
 
+  plug(Tesla.Middleware.JSON)
+
   def get_comments(url) do
     case get("#{url}.json") do
       {:ok, %{body: body}} ->
