@@ -23,6 +23,10 @@ defmodule DiscoverRedditBot.Parser do
           {url, []}
       end
     end)
+    |> Stream.filter(fn
+      {_, []} -> false
+      _ -> true
+    end)
     |> Enum.into(%{})
   end
 
